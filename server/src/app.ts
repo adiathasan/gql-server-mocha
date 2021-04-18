@@ -1,9 +1,26 @@
 import express, { Application, Request, Response } from 'express';
 import { ApolloServer, gql } from 'apollo-server';
 
-const books = [
+interface Book {
+	name: string;
+	author: string;
+}
+
+interface Author {
+	name: string;
+	books: Book[];
+}
+
+const books: Book[] = [
 	{ name: 'love at night', author: 'shit-hole' },
 	{ name: 'love at day', author: 'git-hole' },
+];
+
+const authors: Author[] = [
+	{
+		name: 'shit-hole',
+		books: [{ name: 'love at night', author: 'shit-hole' }],
+	},
 ];
 
 const typeDefs = gql`
@@ -12,14 +29,40 @@ const typeDefs = gql`
 		author: String!
 	}
 
+	type Author {
+		name: String!
+		books: [Book!]!
+	}
+
 	type Query {
-		books: [Book]!
+		books: [Book!]!
+		authors: [Author!]!
+	}
+
+	type Mutation {
+		addBook(add: AddBook): [Book]
+	}
+
+	input AddBook {
+		name: String!
+		author: String!
 	}
 `;
 
 const resolvers = {
 	Query: {
 		books: () => {
+			return books;
+		},
+		authors: () => {
+			return authors;
+		},
+	},
+
+	Mutation: {
+		addBook: (_parent: any, { add: { name, author } }: { add: Book }) => {
+			books.push({ name, author });
+
 			return books;
 		},
 	},
