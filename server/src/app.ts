@@ -1,69 +1,65 @@
 import express, { Application, Request, Response } from 'express';
 import { ApolloServer, gql } from 'apollo-server';
 
-interface Book {
+interface Event {
 	name: string;
-	author: string;
+	description: string;
+	price: number;
+	date: string;
 }
 
-interface Author {
-	name: string;
-	books: Book[];
+interface MongoEvent extends Event {
+	_id: string;
 }
 
-const books: Book[] = [
-	{ name: 'love at night', author: 'shit-hole' },
-	{ name: 'love at day', author: 'git-hole' },
-];
-
-const authors: Author[] = [
-	{
-		name: 'shit-hole',
-		books: [{ name: 'love at night', author: 'shit-hole' }],
-	},
-];
+const events: MongoEvent[] = [];
 
 const typeDefs = gql`
-	type Book {
+	type Event {
+		_id: ID!
 		name: String!
-		author: String!
+		description: String!
+		price: Float!
+		date: String!
 	}
 
-	type Author {
+	input EventInput {
 		name: String!
-		books: [Book!]!
+		description: String!
+		price: Float!
+		date: String!
 	}
 
 	type Query {
-		books: [Book!]!
-		authors: [Author!]!
+		events: [Event!]!
 	}
 
 	type Mutation {
-		addBook(add: AddBook): [Book]
-	}
-
-	input AddBook {
-		name: String!
-		author: String!
+		addEvent(event: EventInput): Event!
 	}
 `;
 
 const resolvers = {
 	Query: {
-		books: () => {
-			return books;
-		},
-		authors: () => {
-			return authors;
+		events: (): MongoEvent[] => {
+			return events;
 		},
 	},
 
 	Mutation: {
-		addBook: (_parent: any, { add: { name, author } }: { add: Book }) => {
-			books.push({ name, author });
+		addEvent: (
+			_parent: any,
+			{ event: { name, date, description, price } }: { event: Event }
+		): MongoEvent => {
+			events.push({
+				name,
+				date,
+				description,
+				price,
+				_id: Math.random().toString(),
+			});
 
-			return books;
+			return { name, date, description, price, _id: Math.random().toString() };
 		},
 	},
 };
@@ -72,7 +68,7 @@ const resolvers = {
 
 const gqlServer = new ApolloServer({ typeDefs, resolvers });
 
-gqlServer.listen(8000, () => {
+gqlServer.listen(8080, () => {
 	console.log('gql server running');
 });
 
@@ -84,6 +80,6 @@ app.get('/', (_req: Request, res: Response) => {
 	res.json({ name: 'shit' });
 });
 
-app.listen(5000, () => {
+app.listen(3000, () => {
 	console.log('running');
 });
