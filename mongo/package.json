@@ -1,0 +1,29 @@
+{
+	"name": "mongo",
+	"version": "1.0.0",
+	"description": "Testing with mocha",
+	"main": "index.js",
+	"scripts": {
+		"start": "node ./dist/app.js",
+		"dev": "nodemon ./src/app.ts",
+		"build": "tsc",
+		"test": "mocha"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"mocha": "^8.3.2",
+		"mongoose": "^5.12.5"
+	},
+	"devDependencies": {
+		"@types/mocha": "^8.2.2",
+		"@types/mongoose": "^5.10.5",
+		"dotenv": "^8.2.0",
+		"ts-node": "^9.1.1"
+	},
+	"directories": {
+		"src": "./src",
+		"test": "./src"
+	}
+}

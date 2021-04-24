@@ -9,7 +9,7 @@ interface Event {
 }
 
 interface MongoEvent extends Event {
-	_id: string;
+	_id: String;
 }
 
 const events: MongoEvent[] = [];
@@ -80,6 +80,6 @@ app.get('/', (_req: Request, res: Response) => {
 	res.json({ name: 'shit' });
 });
 
-app.listen(3000, () => {
+app.listen(4000, () => {
 	console.log('running');
 });
