@@ -1,30 +1,45 @@
 import express, { Application, Request, Response } from 'express';
 import { ApolloServer, gql } from 'apollo-server';
+import { connectDb } from './config/db';
+import { Event } from './models/event';
+import { User } from './models/user';
+import { hashPassword } from './helper';
 
-interface Event {
-	name: string;
+interface EventCustome {
+	title: string;
 	description: string;
 	price: number;
 	date: string;
 }
-
-interface MongoEvent extends Event {
-	_id: String;
+interface UserCustome {
+	email: string;
+	password: string;
 }
-
-const events: MongoEvent[] = [];
 
 const typeDefs = gql`
 	type Event {
 		_id: ID!
-		name: String!
+		title: String!
 		description: String!
 		price: Float!
 		date: String!
+		creator: User!
+	}
+
+	type User {
+		_id: ID!
+		email: String!
+		password: String!
+		createdEvents: [Event!]!
+	}
+
+	input UserInput {
+		email: String!
+		password: String!
 	}
 
 	input EventInput {
-		name: String!
+		title: String!
 		description: String!
 		price: Float!
 		date: String!
@@ -32,54 +47,101 @@ const typeDefs = gql`
 
 	type Query {
 		events: [Event!]!
+		users: [User!]!
 	}
 
 	type Mutation {
-		addEvent(event: EventInput): Event!
+		createEvent(input: EventInput): Event!
+		createUser(input: UserInput): User!
 	}
 `;
 
 const resolvers = {
 	Query: {
-		events: (): MongoEvent[] => {
-			return events;
+		events: async () => {
+			try {
+				const events = await Event.find({});
+
+				return events;
+			} catch (error) {
+				throw error;
+			}
+		},
+
+		users: async () => {
+			try {
+				const users = await User.find({});
+
+				return users;
+			} catch (error) {
+				throw error;
+			}
 		},
 	},
 
 	Mutation: {
-		addEvent: (
+		createEvent: async (
 			_parent: any,
-			{ event: { name, date, description, price } }: { event: Event }
-		): MongoEvent => {
-			events.push({
-				name,
-				date,
+			{ input: { title, date, description, price } }: { input: EventCustome }
+		) => {
+			const event = new Event({
+				title,
 				description,
 				price,
-				_id: Math.random().toString(),
+				date: new Date(date),
 			});
 
-			return { name, date, description, price, _id: Math.random().toString() };
+			try {
+				const newEvent = await event.save();
+
+				return newEvent;
+			} catch (error) {
+				throw error;
+			}
+		},
+
+		createUser: async (
+			_parent: any,
+			{ input: { email, password } }: { input: UserCustome }
+		) => {
+			try {
+				const existsUser = await User.findOne({ email });
+
+				if (existsUser) throw new Error('User already exits with this email');
+
+				const user = new User({
+					email,
+					password: await hashPassword(password),
+				});
+
+				const userData = await user.save();
+
+				return userData;
+			} catch (error) {
+				throw error;
+			}
 		},
 	},
 };
 
-// graphql server
-
 const gqlServer = new ApolloServer({ typeDefs, resolvers });
-
-gqlServer.listen(8080, () => {
-	console.log('gql server running');
-});
-
-// express server
 
 const app: Application = express();
 
-app.get('/', (_req: Request, res: Response) => {
-	res.json({ name: 'shit' });
-});
+connectDb(() => {
+	// graphql server
 
-app.listen(4000, () => {
-	console.log('running');
+	gqlServer.listen(8080, () => {
+		console.log('gql server running');
+	});
+
+	// express server
+
+	app.get('/', (_req: Request, res: Response) => {
+		res.json({ title: 'shit' });
+	});
+
+	app.listen(4000, () => {
+		console.log('running');
+	});
 });
