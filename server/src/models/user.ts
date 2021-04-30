@@ -1,9 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface UserType extends Document {
+interface Iuser {
 	email: string;
 	password: string;
+	createdEvents: string[];
 }
+
+interface UserType extends Document<any, Iuser>, Iuser {}
 
 const userSchema = new Schema({
 	email: {
