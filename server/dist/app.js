@@ -6,7 +6,7 @@ var __importDefault =
 	};
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_1 = __importDefault(require('express'));
-const apollo_server_1 = require('apollo-server');
+const apollo_server_1 = require('apollo-server-express');
 const db_1 = require('./config/db');
 const index_1 = require('./graphql/schema/index');
 const index_2 = require('./graphql/resolvers/index');

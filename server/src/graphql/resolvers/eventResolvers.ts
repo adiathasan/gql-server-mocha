@@ -15,7 +15,9 @@ export const transformEvent = (event: EventType) => {
 
 export const eventResolvers = {
 	Query: {
-		events: async () => {
+		events: async (parent: any, args: any, ctx: any) => {
+			console.log(ctx.req.headers);
+
 			try {
 				const events = await Event.find({});
 

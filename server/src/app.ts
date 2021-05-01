@@ -1,5 +1,5 @@
-// import express, { Application, Request, Response } from 'express';
-import { ApolloServer, gql } from 'apollo-server';
+import express, { Application, Request, Response } from 'express';
+import { ApolloServer, gql } from 'apollo-server-express';
 
 import { connectDb } from './config/db';
 import { userTypeDefs } from './graphql/schema/user.td';
@@ -12,27 +12,24 @@ const baseTypeDefs = gql`
 	type Mutation
 `;
 
+const app: Application = express();
+
 const gqlServer = new ApolloServer({
 	typeDefs: [baseTypeDefs, userTypeDefs, eventTypeDefs, bookingTypeDefs],
 	resolvers,
+	context: ({ req, res }) => ({ req, res }),
 });
 
-// const app: Application = express();
+gqlServer.applyMiddleware({ app });
 
 connectDb(() => {
-	// graphql server
+	// server
 
-	gqlServer.listen(8080, () => {
-		console.log('gql server running');
+	app.get('/', (_req: Request, res: Response) => {
+		res.json({ title: 'shit' });
 	});
 
-	// express server
-
-	// app.get('/', (_req: Request, res: Response) => {
-	// 	res.json({ title: 'shit' });
-	// });
-
-	// app.listen(4000, () => {
-	// 	console.log('running');
-	// });
+	app.listen(4000, () => {
+		console.log('running');
+	});
 });

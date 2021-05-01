@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server';
+import { gql } from 'apollo-server-express';
 
 export const userTypeDefs = gql`
 	type User {
@@ -10,13 +10,25 @@ export const userTypeDefs = gql`
 		updatedAt: String!
 	}
 
+	type AuthData {
+		userId: String!
+		token: String!
+		tokenExpirationTimeInDays: Int!
+	}
+
 	input UserInput {
+		email: String!
+		password: String!
+	}
+
+	input LoginInput {
 		email: String!
 		password: String!
 	}
 
 	extend type Query {
 		users: [User!]!
+		login(input: LoginInput): AuthData!
 	}
 
 	extend type Mutation {

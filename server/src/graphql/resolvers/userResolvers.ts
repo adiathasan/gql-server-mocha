@@ -1,7 +1,17 @@
 import { UserInput } from '.';
-import { hashPassword } from '../../helper';
+import {
+	doesPasswordMatched,
+	hashPassword,
+	makeToken,
+	TOKEN_EXPIRES_IN_DAYS,
+} from '../../helper';
 import { User, UserType } from '../../models/user';
 import { getEvents } from './index.map';
+
+export interface ILogin {
+	email: string;
+	password: string;
+}
 
 export const transformUser = (user: UserType) => {
 	return {
@@ -25,17 +35,46 @@ export const userResolvers = {
 				throw error;
 			}
 		},
+		login: async (_parent: any, { input }: { input: ILogin }) => {
+			try {
+				const ERR_MESSAGE = 'Invalid email/password';
+
+				const { email, password } = input;
+
+				const user = await User.findOne({ email });
+
+				if (!user) throw new Error(ERR_MESSAGE);
+
+				const isPasswordInvalid = !(await doesPasswordMatched({
+					requested: password,
+					encrypted: user.password,
+				}));
+
+				if (isPasswordInvalid) throw new Error(ERR_MESSAGE);
+
+				const token = makeToken({ userId: user.id, email: user.email });
+
+				return {
+					userId: user.id,
+					token,
+					tokenExpirationTimeInDays: TOKEN_EXPIRES_IN_DAYS,
+				};
+			} catch (error) {
+				throw error;
+			}
+		},
 	},
 
 	Mutation: {
-		createUser: async (
-			_parent: any,
-			{ input: { email, password } }: { input: UserInput }
-		) => {
+		createUser: async (_parent: any, { input }: { input: UserInput }) => {
 			try {
+				const ERR_MESSAGE = 'User already exists with this email';
+
+				const { email, password } = input;
+
 				const existsUser = await User.findOne({ email });
 
-				if (existsUser) throw new Error('User already exists with this email');
+				if (existsUser) throw new Error(ERR_MESSAGE);
 
 				const user = new User({
 					email,
