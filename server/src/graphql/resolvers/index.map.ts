@@ -10,9 +10,25 @@ export const getEvents = async (eventIds: string[]): Promise<any> => {
 		return events.map((event) => {
 			return {
 				...event._doc,
+				date: event.date.toISOString(),
 				creator: getCreator.bind(this, event.creator),
 			};
 		});
+	} catch (error) {
+		throw error;
+	}
+};
+
+export const getEvent = async (eventId: string): Promise<any> => {
+	try {
+		const event = await Event.findById(eventId);
+
+		if (!event) throw new Error('Event not found to return');
+
+		return {
+			...event._doc,
+			creator: getCreator.bind(this, event.creator),
+		};
 	} catch (error) {
 		throw error;
 	}
@@ -22,7 +38,7 @@ export const getCreator = async (userId: string): Promise<any> => {
 	try {
 		const user = await User.findById(userId);
 
-		if (!user) throw new Error('User not found');
+		if (!user) throw new Error('User not found to return');
 
 		return {
 			...user._doc,

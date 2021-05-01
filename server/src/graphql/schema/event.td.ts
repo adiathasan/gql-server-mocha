@@ -1,25 +1,15 @@
 import { gql } from 'apollo-server';
 
-export const typeDefs = gql`
+export const eventTypeDefs = gql`
 	type Event {
 		_id: ID!
+		creator: User!
 		title: String!
 		description: String!
 		price: Float!
 		date: String!
-		creator: User!
-	}
-
-	type User {
-		_id: ID!
-		email: String!
-		password: String!
-		createdEvents: [Event!]!
-	}
-
-	input UserInput {
-		email: String!
-		password: String!
+		createdAt: String!
+		updatedAt: String!
 	}
 
 	input EventInput {
@@ -29,13 +19,11 @@ export const typeDefs = gql`
 		date: String!
 	}
 
-	type Query {
+	extend type Query {
 		events: [Event!]!
-		users: [User!]!
 	}
 
-	type Mutation {
+	extend type Mutation {
 		createEvent(input: EventInput): Event!
-		createUser(input: UserInput): User!
 	}
 `;
