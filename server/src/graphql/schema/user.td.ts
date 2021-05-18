@@ -28,10 +28,10 @@ export const userTypeDefs = gql`
 
 	extend type Query {
 		users: [User!]!
-		login(input: LoginInput): AuthData!
 	}
 
 	extend type Mutation {
 		createUser(input: UserInput): User!
+		login(input: LoginInput): AuthData!
 	}
 `;

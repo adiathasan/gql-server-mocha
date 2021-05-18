@@ -1,3 +1,4 @@
+import { IResolvers } from 'graphql-tools';
 import { EventInput } from '.';
 import { Event, EventType } from '../../models/event';
 import { User } from '../../models/user';
@@ -13,10 +14,14 @@ export const transformEvent = (event: EventType) => {
 	};
 };
 
-export const eventResolvers = {
+export const eventResolvers: IResolvers = {
 	Query: {
-		events: async (parent: any, args: any, ctx: any) => {
-			console.log(ctx.req.headers);
+		events: async (_parent: any, _args: any, ctx: any) => {
+			const isAuth = ctx.req.isAuth;
+
+			if (isAuth) {
+				console.log(ctx.req.userId);
+			}
 
 			try {
 				const events = await Event.find({});
@@ -33,10 +38,17 @@ export const eventResolvers = {
 	Mutation: {
 		createEvent: async (
 			_parent: any,
-			{ input: { title, date, description, price } }: { input: EventInput }
+			{ input: { title, date, description, price } }: { input: EventInput },
+			ctx: any
 		) => {
 			try {
-				const user = await User.findById('608ce7aeeff2e064a819b017');
+				const isAuth = ctx.req.isAuth;
+
+				if (!isAuth) throw new Error('Not Authorized To Create Events');
+
+				const { userId } = ctx.req;
+
+				const user = await User.findById(userId);
 
 				if (!user) throw new Error('User not found');
 

@@ -35,6 +35,31 @@ export const userResolvers = {
 				throw error;
 			}
 		},
+	},
+
+	Mutation: {
+		createUser: async (_parent: any, { input }: { input: UserInput }) => {
+			try {
+				const ERR_MESSAGE = 'User already exists with this email';
+
+				const { email, password } = input;
+
+				const existsUser = await User.findOne({ email });
+
+				if (existsUser) throw new Error(ERR_MESSAGE);
+
+				const user = new User({
+					email,
+					password: await hashPassword(password),
+				});
+
+				const newUser = await user.save();
+
+				return transformUser(newUser);
+			} catch (error) {
+				throw error;
+			}
+		},
 		login: async (_parent: any, { input }: { input: ILogin }) => {
 			try {
 				const ERR_MESSAGE = 'Invalid email/password';
@@ -59,31 +84,6 @@ export const userResolvers = {
 					token,
 					tokenExpirationTimeInDays: TOKEN_EXPIRES_IN_DAYS,
 				};
-			} catch (error) {
-				throw error;
-			}
-		},
-	},
-
-	Mutation: {
-		createUser: async (_parent: any, { input }: { input: UserInput }) => {
-			try {
-				const ERR_MESSAGE = 'User already exists with this email';
-
-				const { email, password } = input;
-
-				const existsUser = await User.findOne({ email });
-
-				if (existsUser) throw new Error(ERR_MESSAGE);
-
-				const user = new User({
-					email,
-					password: await hashPassword(password),
-				});
-
-				const newUser = await user.save();
-
-				return transformUser(newUser);
 			} catch (error) {
 				throw error;
 			}

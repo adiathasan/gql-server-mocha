@@ -6,9 +6,11 @@ export interface PasswordMatch {
 	encrypted: string;
 }
 
+const SECRET = 'SECURED';
+
 const SALT = 10;
 
-export const TOKEN_EXPIRES_IN_DAYS = 2;
+export const TOKEN_EXPIRES_IN_DAYS = 1;
 
 export const hashPassword = async (password: string) => {
 	try {
@@ -34,7 +36,9 @@ export const doesPasswordMatched = async ({
 };
 
 export const makeToken = <T extends object>(data: T) => {
-	const SECRET = 'SECURED';
-
 	return jwt.sign(data, SECRET, { expiresIn: TOKEN_EXPIRES_IN_DAYS + 'd' });
+};
+
+export const verifyToken = (token: string) => {
+	return jwt.verify(token, SECRET);
 };

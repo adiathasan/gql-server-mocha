@@ -6,6 +6,7 @@ import { userTypeDefs } from './graphql/schema/user.td';
 import { eventTypeDefs } from './graphql/schema/event.td';
 import { bookingTypeDefs } from './graphql/schema/booking.td';
 import { resolvers } from './graphql/resolvers/index';
+import { isAuthenticated } from './middlewares/auth';
 
 const baseTypeDefs = gql`
 	type Query
@@ -13,6 +14,8 @@ const baseTypeDefs = gql`
 `;
 
 const app: Application = express();
+
+app.use(isAuthenticated);
 
 const gqlServer = new ApolloServer({
 	typeDefs: [baseTypeDefs, userTypeDefs, eventTypeDefs, bookingTypeDefs],
